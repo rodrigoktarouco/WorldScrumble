@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var usedWords: [String] = []
     @State private var rootWord = ""
     @State private var newWord = ""
+    @State private var score = 0
     
     @State private var errorTitle = ""
     @State private var errorMessage = ""
@@ -30,11 +31,20 @@ struct ContentView: View {
                             Image(systemName: "\(word.count).circle")
                             Text(word)
                         }
-                        
                     }
+                }
+                Section {
+                    Text("Your score is: \(score)")
                 }
             }
             .navigationTitle(rootWord)
+            .toolbar(content: {
+                ToolbarItem(placement: .bottomBar) {
+                    Button("Start the game") {
+                        startGame()
+                    }
+                }
+            })
             .onSubmit {
                 addNewWord()
             }
@@ -67,9 +77,15 @@ struct ContentView: View {
             return
         }
         
+        guard isShorterOrStartWord(word: answer) else {
+            wordError(title: "Word is Shorter than 3 letters or it's our start word", message: "You can't just make them up, you know!")
+            return
+        }
+        
         
         withAnimation {
             usedWords.insert(answer, at: 0)
+            score += 1
         }
         newWord = ""
     }
@@ -83,6 +99,8 @@ struct ContentView: View {
                 let allWords = startWords.components(separatedBy: "\n")
                 // 4. Pick one random word, or use "silkworm" as a sensible default
                 rootWord = allWords.randomElement() ?? "silkworm"
+                
+                score = 0
                 
                 // If we are here everything has worked, so we can exit
                 return
@@ -118,6 +136,17 @@ struct ContentView: View {
         errorTitle = title
         errorMessage = message
         showingError = true
+    }
+    
+    func isShorterOrStartWord(word: String) -> Bool {
+        var tempWord = rootWord
+        if word.count <= 3  {
+            return false
+        } else if word == tempWord {
+            return false
+        } else {
+            return true
+        }
     }
 }
 
